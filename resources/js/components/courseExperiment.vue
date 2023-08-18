@@ -112,8 +112,8 @@
 				formData.append('experiment_id',this.selectExperiment);	
 
 				Swal.fire({
-					title: 'you are about to add',
-					text: `${$('#experimentBox option:selected').text()} to ${$vm.courseName}`,					
+					title: 'Adding Experiment?',
+					text: `you are about to add  ${$('#experimentBox option:selected').text()} to ${$vm.courseName}`,					
 					confirmButtonText:'Continue',					      
 				      cancelButtonText:'Cancel',				      				      
 				      cancelButtonColor:'#dd000f',					      

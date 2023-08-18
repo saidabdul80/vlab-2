@@ -64,7 +64,7 @@ class UserController extends Controller
         $role = $request->get('role')??'';        
     
 
-        $roleName = DB::table('role')->where('id',$role)->first()->title;
+        $roleName = DB::table('roles')->where('id',$role)->first()->title;
         $msg ='user exists with that email';
         if($roleName != 'Student'){
             $user =  DB::table('users')->where('email',$email)->first();
@@ -225,6 +225,7 @@ class UserController extends Controller
         $department_id = $request->get('department_id');
         $session_id = $request->get('session_id');
         $role_id = $request->get('role_id');      
+   
 
         $search = ($session_id=='')?'':' users.session_id ="'. $session_id.'"';
         $search .= ($department_id =='')?'':' and users.department_id="'. $department_id.'"';
@@ -237,7 +238,7 @@ class UserController extends Controller
 
     public function getAllUsers(Request $request)
     {        
-        $users = User::active()->paginate(100);
+        $users = User::active()->paginate(20);
         return $users;
     }
 

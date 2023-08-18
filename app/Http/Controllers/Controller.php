@@ -10,4 +10,9 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    function __construct()
+    {
+    	$this->middleware('startup',['except' => ['startup','startup-completed']]);    	
+    }
+
 }

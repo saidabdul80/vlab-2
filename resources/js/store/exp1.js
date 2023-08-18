@@ -156,7 +156,7 @@ export default {
     },
     experiment_data_format:{   
         'vernier-caliper':`<table class="table-stripped" style="width:80%; min-width:300px;">
-                <thead class="bg-dark text-white fs01">
+                <thead class=" fs01">
                     <th >#</th>
                     <th>Object 1</th>                    
                     <th>Object 2</th>                    
@@ -165,12 +165,12 @@ export default {
                     <th>Object 5</th>                    
                 </thead>
                <tr>
-                <td class="v-template p-1 text-center fs01 fw5" width="25%">External size</td>
-                <td class="v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
-                <td class="v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
-                <td class="v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
-                <td class="v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>                    
-                <td class="v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>                    
+                <td class="text-dark v-template p-1 text-center fs01 fw5" width="25%">External size</td>
+                <td class="text-dark v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
+                <td class="text-dark v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
+                <td class="text-dark v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>
+                <td class="text-dark v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>                    
+                <td class="text-dark v-template" width="15%"><input type="number" class="valueReading form-control h-100 bg-white"></td>                    
               </tr>
               <tr>
                 <td class="v-template p-1 text-center fs01 fw5" width="25%">Internal size</td>
@@ -196,7 +196,7 @@ export default {
               </div>
             `,
             'micrometer':`<table class="table-stripped" style="width:80%; min-width:300px;">
-                 <thead class="bg-dark text-white fs01">
+                 <thead class=" fs01">
                     <th >#</th>
                     <th>Object 1</th>                    
                     <th>Object 2</th>                    

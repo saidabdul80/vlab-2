@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\CourseExperiment;
 use App\Models\Experiment;
 use App\Models\ExperimentResult;
+use App\Models\WeeklyWorkExperiment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -225,104 +226,119 @@ class ExperimentController extends Controller
             return response()->json(['error' => 'Experiment not found'], 404);
         }
     }
-
-    public function saveExperimentResult(Request $request)
-    {
-        $validator = Validator::make($request->all(), [            
+    public function getExperimentResult(Request $request){
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'weekly_work_id' => 'required',            
+            'weekly_work_id' => 'required',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['error' => "All fields are required"], 400);
         }
-        $user_id = $request->get('user_id');
+        $userId = $request->get('user_id');
+        $weeklyWorkExperimentId = $request->get('weekly_work_id');
+
+
+        $weeklyWorkExperiment = WeeklyWorkExperiment::find($weeklyWorkExperimentId);
+         // Check for existing experiment result
+         $existingResult = ExperimentResult::where([
+            'user_id' => $userId,
+            'session_id' => $this->currentSession,
+            'weekly_work_id' => $weeklyWorkExperiment->weekly_work_id,
+            'experiment_id' => $weeklyWorkExperiment->experiment_id
+        ])->first();
+
+        return response()->json($existingResult, 200);
+
+    }
+
+    public function saveExperimentResult(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'weekly_work_id' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => "All fields are required"], 400);
+        }
+    
+        $userId = $request->get('user_id');
         $fortimer = $request->get('fortimer');
-        $weekly_work_id = $request->get('weekly_work_id');
-        $sessionId = $this->currentSession;                     
+        $weeklyWorkExperimentId = $request->get('weekly_work_id');
         $timeStarted = $request->get('time_started');
-        $timeLeft = $request->get('time_left');            
+        $timeLeft = $request->get('time_left');
         $timeSubmitted = $request->get('time_submitted');
         $resultJson = $request->get('result_json');
-        $weeklyWorkExperimentId = $request->get('weekly_work_id'); //not this id is for weekly work experiment id
-                
-
-
-
-
-
-        $userDetail = Course::join('weekly_works', 'courses.id','weekly_works.course_id')->join('weekly_work_experiments','weekly_work_experiments.weekly_work_id','weekly_works.id')->where(['weekly_works.session_id'=>$this->currentSession, 'weekly_work_experiments.id'=>$weeklyWorkExperimentId])->first();
+        
+        // Fetch user's course details
+        $userDetail = Course::join('weekly_works', 'courses.id', 'weekly_works.course_id')
+            ->join('weekly_work_experiments', 'weekly_work_experiments.weekly_work_id', 'weekly_works.id')
+            ->where(['weekly_works.session_id' => $this->currentSession, 'weekly_work_experiments.id' => $weeklyWorkExperimentId])
+            ->first();
+    
+        if (!$userDetail) {
+            return response()->json(['error' => "Invalid user or experiment"], 400);
+        }
+    
         $experimentId = $userDetail->experiment_id;
-        $course_id = $userDetail->course_id;
-
-        $completionStatus = $request->get('completion_status');        
-        $checkDuplicate = ExperimentResult::where([
-            'user_id' => $this->userId,
-            'session_id' => $sessionId,
-            'weekly_work_id' => $weeklyWorkExperimentId
-        ])->first();                
-        if (!is_null($checkDuplicate)) {
-            $experimentResultId = $checkDuplicate->id;
-            $upsertResult = ExperimentResult::find($experimentResultId);
-
-            if ($fortimer == 0) {
-                $upsertResult->result_json = $resultJson;
-                $upsertResult->weekly_work_id = $weeklyWorkExperimentId; //weekly_work_experiment_id
-                
-                $upsertResult->time_submited = $timeSubmitted;
-                $upsertResult->course_id = $course_id;
-                $upsertResult->restart = 'Deny';
-                $upsertResult->completion_status = 'Completed';
+        $courseId = $userDetail->course_id;
+        $weeklyWorkExperiment = WeeklyWorkExperiment::find($weeklyWorkExperimentId);
+        
+        // Check for existing experiment result
+        $existingResult = ExperimentResult::where([
+            'user_id' => $userId,
+            'session_id' => $this->currentSession,
+            'weekly_work_id' => $weeklyWorkExperiment->weekly_work_id,
+            'experiment_id' => $weeklyWorkExperiment->experiment_id
+        ])->first();
+            
+        // Update existing experiment result
+        if ($existingResult) {
+            // Update common fields
+            $existingResult->time_left = $timeLeft;
+            
+            if ($fortimer === 0) {
+                $existingResult->result_json = $resultJson;
+                $existingResult->time_submited = $timeSubmitted;
+                $existingResult->completion_status = 'Completed';
+                $existingResult->restart = 'Deny';
             }
-
+            
             if ($timeLeft == '00:00') {
-                //submit if time elapsed
-                $upsertResult->restart = 'Deny';                
-                $experimentResult->completion_status = 'Completed';            
+                // Submit if time elapsed
+                $existingResult->restart = 'Deny';
+                $existingResult->completion_status = 'Completed';
             }
-
-            $upsertResult->time_left = $timeLeft;
-
-            if($upsertResult->save()){
+    
+            if ($existingResult->save()) {
                 return response()->json(['message' => "Experiment Result has been updated"], 200);
             }
         }
-        //end update
-
-        //insert
-        $experimentResult = new ExperimentResult;
-        if ($fortimer == 0) {
-            //when submitting
-            $experimentResult->result_json = $resultJson;
-            $experimentResult->time_submited = $timeSubmitted;
-            $experimentResult->completion_status = 'Completed';
-            $upsertResult->restart = 'Deny';
+        // If no existing result, create a new one
+        else {
+            $newResult = new ExperimentResult;
+            $newResult->id = Util::uuid();
+            $newResult->user_id = $userId;
+            $newResult->experiment_id = $experimentId;
+            $newResult->time_started = $timeStarted;
+            $newResult->time_left = $timeLeft;
+            $newResult->time_submited = $timeSubmitted;
+            $newResult->result_json = $resultJson;
+            $newResult->completion_status = 'Started';
+            $newResult->restart = 'Allow';
+            $newResult->course_id = $courseId;
+            $newResult->weekly_work_id = $weeklyWorkExperiment->weekly_work_id;
+            $newResult->session_id = $this->currentSession;
+            
+            if ($newResult->save()) {
+                return response()->json(['success' => true], 200);
+            }
         }
-
-        if ($timeLeft == '00:00') {
-            //submit if time elapsed
-            $upsertResult->restart = 'Deny';            
-            $experimentResult->completion_status = 'Completed';            
-        }
-
-        $experimentResult->id = Util::uuid();
-        $experimentResult->user_id = $this->userId;
-        $experimentResult->experiment_id = $experimentId;
-
-        $experimentResult->time_started = $timeStarted;
-        $experimentResult->course_id = $course_id;
-        $experimentResult->time_left = $timeLeft;
-        $experimentResult->weekly_work_id = $weeklyWorkExperimentId;
-
-        $experimentResult->session_id = $sessionId;
-
-        $saveResult = $experimentResult->save();
-        if ($saveResult) {
-            return response()->json(['success' => true], 200);
-        }
-
+    
         return response()->json(['success' => false], 400);
     }
+    
 
     public function getExperimentResultsByExpSessId(Request $request)
     {

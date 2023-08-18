@@ -69,7 +69,7 @@
                         </span>
                         </span>
                         <span v-if="experiment_data_format[exp.page] !== undefined" class="w-100">
-                          <div :id="exp.id" class="formExp w-100" v-html="experiment_data_format[exp.page]" style="height:240px;">      
+                          <div :id="exp.id" class="formExp w-100" v-html="experiment_data_format[exp.page]" style="">      
                           </div>                          
                         </span>
                         <span v-else class="w-100">                          

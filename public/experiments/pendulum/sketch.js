@@ -1,30 +1,13 @@
-// The Nature of Code
-// Daniel Shiffman
-// http://natureofcode.com
-
-// Pendulum
-
-// A simple pendulum simulation
-// Given a pendulum with an angle theta (0 being the pendulum at rest) and a radius r
-// we can use sine to calculate the angular component of the gravitational force.
-
-// Gravity Force = Mass * Gravitational Constant;
-// Pendulum Force = Gravity Force * sine(theta)
-// Angular Acceleration = Pendulum Force / Mass = gravitational acceleration * sine(theta);
-
-// Note this is an ideal world scenario with no tension in the
-// pendulum arm, a more realistic formula might be:
-// Angular Acceleration = (g / R) * sine(theta)
-
-// For a more substantial explanation, visit:
 
 var p;
 var btnstate = false;
-var ballSize = 30;
-var ropeLenght = 4;
+window.ballSize = 30;
+const reductionFactor = 0.2;
+window.ropeLenght = 4 *reductionFactor;
 var mode = 1;
 var myFontNormal;
 var elapseT;
+
 var cx,cy,cr,button, balltarget;
 function setup() {
   createCanvas(940, 360);
@@ -47,6 +30,8 @@ function setup() {
   input2 = createInput(ropeLenght);
   input2.size(85,20);
   input2.attribute('type','number');
+  input2.attribute('max','30');
+  input2.attribute('min','1');
   input2.position(19, 155);
   input2.changed(resizeRope);
   input2.input(resizeRope);
@@ -101,12 +86,16 @@ function draw() {
   
 }
 function resizeBall(){ 
-  ballSize = this.value()
-  p = new Pendulum(createVector(width / 2, 0), ropeLenght,ballSize);    
+  window.ballSize = this.value()
+  p = new Pendulum(createVector(width / 2, 0), window.ropeLenght * reductionFactor,window.ballSize);    
 }
 function resizeRope(){
-  ropeLenght = this.value();
-  p = new Pendulum(createVector(width / 2, 0), ropeLenght,ballSize);    
+  window.ropeLenght = this.value();
+  if(ropeLenght>30){
+    alert('maximum rope length is 30')
+    return false
+  }
+  p = new Pendulum(createVector(width / 2, 0), window.ropeLenght * reductionFactor,window.ballSize);    
 }
 function btnControl(){  
     select('#elapseT').html(select('#timec').html());

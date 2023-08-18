@@ -20,8 +20,9 @@ class TwoUserAuth
         
         if(FacadesSession::has('info')){
             $userData = session('info')->data->user ?? '';
-            $role = $userData->role_id ?? '';            
-            if ($role == '1' || $role == '2') {
+            $role = $userData->role_id ?? '';
+                     
+            if ($role == '3' || $role == '2') {
                 return $next($request);                
             }else{
                 return redirect('/login');

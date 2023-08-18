@@ -12,9 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        '/get_user_department',
-        '/api/password/reset',
-        'password/reset',
-        '/proccess-login'
+        //
     ];
 }

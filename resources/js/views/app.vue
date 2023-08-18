@@ -1,11 +1,14 @@
 <template>
-  <router-view />
+  <div>
+    <welcome/>
+  </div>
 </template>
-
 <script>
+import Welcome from '../components/Welcome.vue';
+
+
 export default {
-  name: 'App',
-  components: {},
+  components: {Welcome},
   data() {
       return {
 
@@ -14,7 +17,3 @@ export default {
 
 };
 </script>
-
-<style>
-@import url('../assets/index.css');
-</style>

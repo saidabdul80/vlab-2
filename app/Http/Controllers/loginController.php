@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 use Route;
 
-class loginController extends Controller
+class LoginController extends Controller
 {  
     public function __construct()
     {

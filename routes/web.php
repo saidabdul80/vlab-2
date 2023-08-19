@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\ExperimentController;
+use App\Http\Controllers\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,7 +66,7 @@ Route::post('/get_user_department', 'App\Http\Controllers\PagesController@getFac
 
 Route::middleware(['is_loggedin'])->group(function(){
 	Route::get('/login', 'App\Http\Controllers\LoginController@index')->name('login');
-	Route::post('/proccess-login', 'App\Http\Controllers\LoginController@process_login');
+	Route::post('/proccess-login',[LoginController::class,'process_login']);
 });
 
 

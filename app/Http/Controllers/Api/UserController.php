@@ -297,91 +297,102 @@ class UserController extends Controller
 
     public function importStudents(Request $request)
     {
-        $file = $request->csv->path();
-
+        // Validate request
         $validator = Validator::make($request->all(), [
-            'csv' => 'required',
+            'csv' => 'required|file|mimes:csv,txt',
+            'department_id' => 'required|exists:departments,id',
+            'faculty_id' => 'required|exists:faculties,id',
+            'role_id' => 'required|exists:roles,id',
         ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 400);
+        }
+    
+        // Get file path
+        $file = $request->file('csv')->getRealPath();
+    
+        // Read CSV data
+        try {
+            $users = Util::csvToArray($file);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error while reading file'], 400);
+        }
+    
         $departmentId = $request->get('department_id');
         $facultyId = $request->get('faculty_id');
         $roleId = $request->get('role_id');
-        if ($validator->fails()) {
-            return response()->json(['error' => "data_url field is required"], 400);
-        }
-
-        $users = Util::csvToArray($file);
-        //return dd($students);
-            
-
+        $password = md5('12345');
+    
         $data = [];
         $exists = [];
         $newStudents = [];
-        $password = md5(12345678);
-
+    
         foreach ($users as $user) {
-
-            $checkDuplicateMatricNumber = User::where(['matric_number' => $user['matric_number'], 'status'=>'Active'])->first();
-            $checkDuplicateEmail = User::where(['email' => $user['email'],'status'=>'Active'])->first();
-
-            if ($user['matric_number'] != '') {
-                if ($checkDuplicateMatricNumber == null) {                        
-                    $data[] = [
-                        'id' => Util::uuid(),
-                        'matric_number' => $user['matric_number'],
-                        'username' => $user['matric_number'] ?? $user['email'],
-                        'email' => $user['email'],
-                        'first_name' => $user['first_name'],
-                        'other_names' => $user['other_names'],
-                        'gender' => $user['gender'],
-                        'password' => $password,
-                        'role_id' => $roleId,
-                        'phone' => $user['phone'],
-                        'salute'=>$user['salute'],
-                        'school_id' => $this->schoolId,
-                        'faculty_id' => $facultyId,
-                        'department_id' => $departmentId,
-                        'session_id' => $this->currentSession,
-                        'user_ip_address' => Util::ip()                        
-                    ];
-                    $newStudents[] = $user['matric_number'];
-                    
-                } else {
-                    $exists[] = $user['matric_number'];                    
-                }
-            }else if($user['email'] != ''){
-                 if ($checkDuplicateEmail == null) {                        
-                    $data[] = [
-                        'id' => Util::uuid(),
-                        'matric_number' => $user['matric_number'],
-                        'username' => $user['email'],
-                        'email' => $user['email'],
-                        'first_name' => $user['first_name'],
-                        'other_names' => $user['other_names'],
-                        'gender' => $user['gender'],
-                        'password' => $password,
-                        'role_id' => $roleId,
-                        'phone' => $user['phone'],
-                        'salute'=>$user['salute'],
-                        'school_id' => $this->schoolId,
-                        'faculty_id' => $facultyId,
-                        'department_id' => $departmentId,
-                        'session_id' => $this->currentSession,
-                        'user_ip_address' => Util::ip()
-                    ];
-                    $newStudents[] = $user['email'];
-                } else {
-                    $exists[] = $user['email'];
-                }
-
-            }else{
-                //matric number and email cannot be empty
+            // Validate user data
+            if (empty($user['matric_number']) && empty($user['email'])) {
+                continue; // Skip invalid records
             }
-
+    
+            // Check for duplicate entries
+            $checkDuplicateMatricNumber = User::where(['matric_number' => $user['matric_number'], 'status' => 'Active'])->first();
+            $checkDuplicateEmail = User::where(['email' => $user['email'], 'status' => 'Active'])->first();
+    
+            if (!empty($user['matric_number']) && $checkDuplicateMatricNumber === null) {
+                // New student by matric number
+                $data[] = $this->prepareUserData($user, $password, $roleId, $facultyId, $departmentId);
+                $newStudents[] = $user['matric_number'];
+            } elseif (!empty($user['email']) && $checkDuplicateEmail === null) {
+                // New student by email
+                $data[] = $this->prepareUserData($user, $password, $roleId, $facultyId, $departmentId, true);
+                $newStudents[] = $user['email'];
+            } else {
+                // Existing student
+                $exists[] = !empty($user['matric_number']) ? $user['matric_number'] : $user['email'];
+            }
         }
-
-        User::insert($data);        
-        return response()->json(['success' =>true, 'msg'=> 'upload successfully', 'uploaded' => $newStudents, 'failed' => $exists], 200);
+    
+        // Insert new students
+        if (!empty($data)) {
+            User::insert($data);
+        }
+    
+        return response()->json(['success' => true, 'msg' => 'Upload successfully', 'uploaded' => $newStudents, 'failed' => $exists], 200);
     }
+    
+    /**
+     * Prepare user data for insertion
+     *
+     * @param array $user
+     * @param string $password
+     * @param int $roleId
+     * @param int $facultyId
+     * @param int $departmentId
+     * @param bool $useEmailAsUsername
+     * @return array
+     */
+    private function prepareUserData(array $user, string $password, int $roleId,  $facultyId,  $departmentId, bool $useEmailAsUsername = false): array
+    {
+        return [
+            'id' => Util::uuid(),
+            'matric_number' => $user['matric_number'],
+            'username' => $useEmailAsUsername ? $user['email'] : ($user['matric_number'] ?? $user['email']),
+            'email' => $user['email'],
+            'first_name' => $user['first_name'],
+            'other_names' => $user['other_names'],
+            'gender' => $user['gender'],
+            'password' => $password,
+            'role_id' => $roleId,
+            'phone' => $user['phone'],
+            'salute' => $user['salute'],
+            'school_id' => $this->schoolId,
+            'faculty_id' => $facultyId,
+            'department_id' => $departmentId,
+            'session_id' => $this->currentSession,
+            'user_ip_address' => Util::ip(),
+        ];
+    }
+    
 
     public function updatePassword(Request $request)
     {

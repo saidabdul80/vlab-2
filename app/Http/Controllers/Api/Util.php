@@ -20,23 +20,54 @@ class Util extends Controller
 
     static public function csvToArray($filename = '', $delimiter = ',')
     {
-        if (!file_exists($filename) || !is_readable($filename))
-            return response()->json(['error' => "Error while reading file"], 400);
-
+        // Check if the file exists and is readable
+        if (!file_exists($filename) || !is_readable($filename)) {
+            throw new \Exception("Error while reading file");
+        }
+    
         $header = null;
-        $data = array();
+        $data = [];
+    
+        // Open the file in read mode
         if (($handle = fopen($filename, 'r')) !== false) {
+            // Read each line of the CSV file
             while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
-                if (!$header)
-                    $header = $row;
-                else
+                // Skip rows where all cells are empty
+                if (!array_filter($row)) {
+                    continue;
+                }
+    
+                if (!$header) {
+                    // Set the header if it hasn't been set yet
+                    // Trim spaces and remove any empty fields
+                    $header = array_filter(array_map('trim', $row)); // Trim and filter out empty values
+                    $header = array_values($header); // Reindex the array to remove any gaps
+                    //dd($header); // Debugging line to check header content
+                } else {
+                    // Adjust the row to match the header length
+                    $rowCount = count($row);
+                    $headerCount = count($header);
+    
+                    if ($rowCount < $headerCount) {
+                        // Pad the row with empty strings if it's shorter than the header
+                        $row = array_pad($row, $headerCount, '');
+                    } elseif ($rowCount > $headerCount) {
+                        // Truncate the row if it's longer than the header
+                        $row = array_slice($row, 0, $headerCount);
+                    }
+    
+                    // Combine the header with the adjusted row to form an associative array
                     $data[] = array_combine($header, $row);
+                }
             }
+            // Close the file handle
             fclose($handle);
         }
-
+    
         return $data;
     }
+    
+
 
     static public function ip()
     {

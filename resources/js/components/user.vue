@@ -105,8 +105,8 @@
 								<td width="20%">{{user.department}}</td>	           			                  
 								<td width="20%">{{user.courses}}</td>	           			                  
 								<td width="15%" >
-									<span class="ml-2 fa fa-edit pl-3  fs01 cursor-1" onclick="edituser(user)" style="border-left: 1px solid #ccc;"></span>
-									<span class="ml-2 fa fa-trash pl-3  fs01 cursor-1" onclick="deleteuser(user.id)"></span>
+									<span class="ml-2 fa fa-edit pl-3  fs01 cursor-1" @click="edituser(user)" style="border-left: 1px solid #ccc;"></span>
+									<span class="ml-2 fa fa-trash pl-3  fs01 cursor-1" @click="deleteuser(user.id)"></span>
 								</td>
 							</tr>
 						</tbody>

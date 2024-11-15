@@ -20,7 +20,7 @@ class UserController extends Controller
     private $departmentId;
     private $userId;
     private $roleId;
-
+    private $currentSession;
     public function __construct()
     {
         if (Auth::check()) {
@@ -123,52 +123,65 @@ class UserController extends Controller
     }
     public function update(Request $request)
     {
+        // Validate the request
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required',
+            'user_id' => 'required|exists:users,id',
+            'email' => 'required|email',
+            'phone' => 'nullable|string',
+            'matric_number' => 'nullable|string',
+            'first_name' => 'required|string',
+            'other_names' => 'nullable|string',
+            'faculty_id' => 'nullable|exists:faculties,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'gender' => 'nullable|string',
+            'title' => 'nullable|string',
+            'role' => 'required|exists:roles,id',
         ]);
-
+    
         if ($validator->fails()) {
-            return response()->json(['error' => "user_id field is required"], 400);
+            return response()->json(['error' => $validator->errors()->first()], 400);
         }
-
+    
         $userId = $request->get('user_id');
         $email = $request->get('email');
-        $phone = $request->get('phone');        
-        $password = $phone=='' ? md5('123456'): md5($phone);        
-        $matric_number = $request->get('matric_number')??'';
+        $phone = $request->get('phone');
+        $password = $phone=='' ? md5('123456'): md5($phone);    
+        $matric_number = $request->get('matric_number') ?? '';
         $first_name = $request->get('first_name');
         $other_names = $request->get('other_names');
         $faculty_id = $request->get('faculty_id');
         $department_id = $request->get('department_id');
         $gender = $request->get('gender');
-        $salute = $request->get('title')??'';
-        $role = $request->get('role')??'';
-        $user_ip_address = (new Util())->ip();        
-        
-        
-        $roleName = DB::table('role')->where('id',$role)->first()->title;
-        $msg ='user exists with that email';
-        if($roleName !=  'Student'){
-            $user =  User::where('email',$email)->whereNotIn('id', [$userId])->first();
-            if (!is_null($user)) {
-                return response()->json(['error' => 'Email Already Exist'], 409);                
+        $salute = $request->get('title') ?? '';
+        $role = $request->get('role');
+        $user_ip_address = (new Util())->ip();
+    
+        // Check if the role is 'Student'
+        $roleName = DB::table('roles')->where('id', $role)->first()->title;
+    
+        if ($roleName !== 'Student') {
+            // Check if email exists for non-student roles
+            $existingUser = User::where('email', $email)->where('id', '!=', $userId)->first();
+            if ($existingUser) {
+                return response()->json(['error' => 'Email Already Exists'], 409);
             }
             $username = $email;
-        }else{
-            $msg ='user exists with that matric number';
-            $matric =  User::where('matric_number',$matric_number)->whereNotIn('id', [$userId])->first();            
-            
-            if (!is_null($matric)) {
-                return response()->json(['error' => 'Matric Already Exist'], 409);                
+        } else {
+            // Check if matric number exists for student role
+            $existingMatric = User::where('matric_number', $matric_number)->where('id', '!=', $userId)->first();
+            if ($existingMatric) {
+                return response()->json(['error' => 'Matric Number Already Exists'], 409);
             }
-
-            $user =  User::where('email',$email)->whereNotIn('id', [$userId])->first();
-            if (!is_null($user)) {
-                return response()->json(['error' => 'Email Already Exist'], 409);                
+    
+            // Check if email exists for student role
+            $existingUser = User::where('email', $email)->where('id', '!=', $userId)->first();
+            if ($existingUser) {
+                return response()->json(['error' => 'Email Already Exists'], 409);
             }
             $username = $matric_number;
         }
-
+    
+        // Update user details
         $user = User::find($userId);
         $user->username = $username;
         $user->password = $password;
@@ -184,11 +197,13 @@ class UserController extends Controller
         $user->phone = $phone;
         $user->matric_number = $matric_number;
         $user->salute = $salute;
-
-        $save = $user->save();
-        return response()->json(['success' => true], 200);            
+    
+        // Save the user
+        $user->save();
+    
+        return response()->json(['success' => true], 200);
     }
-
+    
     public function delete(Request $request)
     {
         $validator = Validator::make($request->all(), [

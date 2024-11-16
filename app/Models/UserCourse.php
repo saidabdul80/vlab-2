@@ -12,7 +12,7 @@ class UserCourse extends Model
     public function getCodeAttribute(): string
     {
         $course = Course::find($this->id);
-        return $course?->code??'';
+        return $course->code ??'';
     }
 
 }

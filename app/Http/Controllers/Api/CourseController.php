@@ -242,7 +242,7 @@ class CourseController extends Controller
             return response()->json($course, 200);
 
         }catch(Exception $e){   
-            return response()->json($e->getMessage(), 400);
+            return $e;//response()->json($e->getMessage(), 400);
         }
     }
 

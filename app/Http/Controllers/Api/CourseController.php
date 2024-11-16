@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\UserController as ApiUserController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserController;
 use App\Models\Course;
@@ -11,6 +12,7 @@ use App\Models\CourseResources;
 use App\Models\CourseStudents;
 use App\Models\User;
 use App\Models\User_course;
+use App\Models\UserCourse;
 use App\Models\WeeklyWork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,7 +162,7 @@ class CourseController extends Controller
         $courseId = $request->get('course_id');
         $course = Course::find($courseId);
         $check1 = WeeklyWork::where(['course_id'=>$courseId, 'status'=>'Active'])->first();
-        $check2 = User_course::where(['course_id'=>$courseId, 'status'=>'Active'])->first();
+        $check2 = UserCourse::where(['course_id'=>$courseId, 'status'=>'Active'])->first();
         if ($course) {
             if(empty($check1) && empty($check2)){
                 $course->status = 'Inactive';
@@ -342,26 +344,45 @@ class CourseController extends Controller
     public function bulkCourseAssign(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'course_id' => 'required',
-            'data_url' => 'required',
+            'course_id' => 'required|exists:courses,id', // Ensure the course_id exists in the courses table
+            'data_url' => 'required|url', // Ensure data_url is a valid URL
         ]);
-
+    
         if ($validator->fails()) {
-            return response()->json(['error' => "All fields are required"], 400);
+            return response()->json(['error' => 'All fields are required and must be valid.'], 400);
         }
-
+    
         $file = public_path($request->get('data_url'));
         $course_id = $request->get('course_id');
-
-        $students = Util::csvToArray($file);
-
+    
+        try {
+            $students = Util::csvToArray($file);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error reading the file. Please ensure the file exists and is readable.'], 500);
+        }
+    
+        $addedStudents = [];
+        $failedStudents = [];
+    
         foreach ($students as $student) {
-            $userId = UserController::studentByMatricNumber($student['matric_number'])['id'];            
-            if ($userId != null) {
-                $this->addStudentCourse($userId, $course_id);
+            $user = app(ApiUserController::class)::studentByMatricNumber($student['matric_number']);
+    
+            if ($user && isset($user['id'])) {
+                $this->addStudentCourse($user['id'], $course_id);
+                $addedStudents[] = $student['matric_number'];
+            } else {
+                $failedStudents[] = $student['matric_number'];
             }
         }
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Bulk course assignment completed.',
+            'added_students' => $addedStudents,
+            'failed_students' => $failedStudents,
+        ], 200);
     }
+    
 
     public function enrollStudent(Request $request)
     {

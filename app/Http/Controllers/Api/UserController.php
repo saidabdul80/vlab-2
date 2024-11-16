@@ -396,31 +396,38 @@ class UserController extends Controller
 
     public function updatePassword(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'old_password' => 'required',
-            'new_password' => 'required',
+            'new_password' => 'required|min:8', // Add a minimum length for better security
         ]);
-
+    
         if ($validator->fails()) {
-            return response()->json(['error' => "All fields is required"], 400);
+            return response()->json(['error' => 'All fields are required and the new password must be at least 8 characters long.'], 400);
         }
-
-        if (strcmp(md5($request->get('old_password')), Auth::user()->password)) {
+    
+        $user = $request->user();
+    
+        // Check if the old password matches
+        if ($request->get('old_password') !== md5($user->password)) {
             return response()->json(['errors' => ['current' => ['Current password does not match']]], 422);
         }
-
-        if (strcmp($request->get('old_password'), $request->get('new_password')) == 0) {
-            return response()->json(['errors' => ['current' => ['New Password cannot be same as your current password']]], 422);
+    
+        // Check if the new password is the same as the old password
+        if ($request->get('old_password') === $request->get('new_password')) {
+            return response()->json(['errors' => ['new_password' => ['New password cannot be the same as your current password']]], 422);
         }
-
-        $user = Auth::user();
+    
+        // Update the password
         $user->password = md5($request->get('new_password'));
         $user->using_default_password = '0';
+    
         if ($user->save()) {
             return response()->json(['success' => true], 200);
         }
+    
+        return response()->json(['error' => 'Failed to update password. Please try again.'], 500);
     }
+    
 
     public function getStudentByMatricNumber(Request $request)
     {

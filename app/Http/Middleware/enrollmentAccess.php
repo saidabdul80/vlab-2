@@ -17,7 +17,7 @@ class EnrollmentAccess
      *///update
     public function handle(Request $request, Closure $next)
     {
-        $course_id =  $request->route()->parameter('id');
+        $course_id =  $request->route('id');
         $userData = session('info')->data->user ?? '';
         if($course_id != '' ){
             $enrolled = CourseStudents::where(['course_id'=>$course_id, 'user_id'=>$userData->id])->first();                                

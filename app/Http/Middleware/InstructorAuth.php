@@ -4,7 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Session;
+use Illuminate\Support\Facades\Session;
+
 class InstructorAuth
 {
     /**

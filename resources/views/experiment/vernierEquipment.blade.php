@@ -3690,7 +3690,7 @@ function AAPTVernierCaliper_View_0 (_topFrame) {
       .setProperty("FillColor","White") // EJsS HtmlView.HtmlView Page: setting property 'FillColor' for element 'cmshow'
       .setProperty("SizeX",10) // EJsS HtmlView.HtmlView Page: setting property 'SizeX' for element 'cmshow'
       .setProperty("LineColor","White") // EJsS HtmlView.HtmlView Page: setting property 'LineColor' for element 'cmshow'
-      .setProperty("Text","cm 🇸🇬") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'cmshow'
+      .setProperty("Text","cm ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'cmshow'
       .setProperty("SizeY",10) // EJsS HtmlView.HtmlView Page: setting property 'SizeY' for element 'cmshow'
       .setProperty("PixelSize",true) // EJsS HtmlView.HtmlView Page: setting property 'PixelSize' for element 'cmshow'
       .setProperty("EnabledPosition","ENABLED_X") // EJsS HtmlView.HtmlView Page: setting property 'EnabledPosition' for element 'cmshow'

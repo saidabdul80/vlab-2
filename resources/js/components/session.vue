@@ -87,9 +87,8 @@
 				  	if ( sessionName == "" ) {					     
 				         Swal.showValidationMessage('All fields are required');
 				  	}
-				  	$pattern = /^(20?\d)\d{2}\/(20?\d)\d{2}$/;//session pattern
-					if(preg_match($))
-
+				  	let regExp = /^(20?\d)\d{2}\/(20?\d)\d{2}$/;//session pattern
+				
 				  	if (!regExp.test(sessionName)) {
 				  		 Swal.showValidationMessage('Invalid session');	
 				  	}else{

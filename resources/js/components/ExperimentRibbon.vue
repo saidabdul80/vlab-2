@@ -92,10 +92,8 @@ export default {
 						rowData.forEach((cellData, cellIndex) => {
 							xindex += 1;
 
-							// Use rowIndex and cellIndex to get the correct input field
 							const inputField = $(element).find('.resultReading').eq(xindex); 
 
-							// Set the value of the input field
 							inputField.val(cellData);
 						});
 					});

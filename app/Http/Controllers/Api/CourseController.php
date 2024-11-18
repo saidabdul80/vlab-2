@@ -299,7 +299,7 @@ class CourseController extends Controller
             return response()->json(['error' => "faculty_id is required"], 400);
         }
 
-        $session_id = Session::where('is_current', 1)->first()?->id;
+        $session_id = Session::where('is_current', 1)->first()->id ?? null;
 
         $facultyId = $request->get('faculty_id');        
         $courses = Course::with(['experiments','weekly_work'=>function($query) use($session_id){

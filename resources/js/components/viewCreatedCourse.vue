@@ -39,7 +39,7 @@
 						<td width="10%">
 
 							<span title="edit" class="ml-2 fa fa-edit pl-3  fs01 cursor-1"
-								@click="editCourse(createdCourses[index])" style="border-left: 1px solid #ccc;"></span>
+								@click="editCourse(course, course.id)" style="border-left: 1px solid #ccc;"></span>
 							<span title="delete" class="ml-2 fa fa-trash pl-3  fs01 cursor-1"
 								@click="deleteCourse(course.id)"></span>
 						</td>
@@ -105,7 +105,7 @@ export default {
 			this.VueSweetAlert2('v-createcourse', {
 				update: true,
 				alldata: obj,
-				course_id: 2 //id
+				course_id: id
 			})
 		},
 		deleteCourse: function (id) {

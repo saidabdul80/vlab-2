@@ -733,8 +733,8 @@ export default {
 					    //var $circle = $this.find('.c-ripple__circle');
 					  const diameter = Math.max($this.width(), $this.height());
 					  const radius = diameter / 2;
-					  let left = event.pageX - $offset.left - radius;
-					  let top = event.pageY - $offset.top - radius;
+					  let left = event.pageX - ($offset?.left||0) - radius;
+					  let top = event.pageY - ($offset?.top||0) - radius;
 
 					  $('.ripple').remove()
 					  $this.append("<span class='ripple b-warning' style='width:"+diameter+"px; height:"+diameter+"px; left:"+left+"px; top:"+top+"px;'></span>");
@@ -909,8 +909,9 @@ export default {
 					    var $offset = $this.parent().offset();					    
 					  const diameter = Math.max($this.width(), $this.height());
 					  const radius = diameter / 2;
-					  let left = event.pageX - $offset.left - radius;
-					  let top = event.pageY - $offset.top - radius;
+					  let left = event.pageX - ($offset?.left||0) - radius;
+					  let top = event.pageY - ($offset?.top||0) - radius;
+
 
 					  $('.ripple').remove()
 					  $this.append("<span class='ripple b-warning' style='width:"+diameter+"px; height:"+diameter+"px; left:"+left+"px; top:"+top+"px;'></span>");

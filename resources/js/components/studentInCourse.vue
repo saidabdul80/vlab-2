@@ -86,7 +86,7 @@
 	    				</div>
 	    				<ul class="display-none px-3 py-2 ulLeft">
 	    <li v-for="exp in task.weekly_work_experiments" :key="'z'+exp.id" @click="showResult(exp.id,$root)" class="font2 text-dark">
-	    						{{exp.experiments.name}}
+	    						{{exp.experiment.name}}
 	    					</li>
 	    				</ul>
 	    			</div>	

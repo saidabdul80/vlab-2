@@ -10,6 +10,7 @@ use App\Models\CourseExperiment;
 use App\Models\CourseInstructor;
 use App\Models\CourseResources;
 use App\Models\CourseStudents;
+use App\Models\Session;
 use App\Models\User;
 use App\Models\User_course;
 use App\Models\UserCourse;
@@ -297,6 +298,8 @@ class CourseController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => "faculty_id is required"], 400);
         }
+
+        $session_id = Session::where('is_current', 1)->first()?->id;
 
         $facultyId = $request->get('faculty_id');        
         $courses = Course::with(['experiments','weekly_work'=>function($query) use($session_id){

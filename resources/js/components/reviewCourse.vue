@@ -33,7 +33,7 @@
      	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row ml-3"> 
      		<div class="col-lg-10 col-md-12 col-sm-12 col-xs-12 px-0 row bg-white shadow" style="border-radius: 24px;">     			
 	     		<div class="col-lg-12 text-center bg-info text-white rounded ">
-	     			<span class="fw6 font2">Summary</span>
+	     			<span class="fw6 font2"></span>
 	     		</div>
 	     		<div class="col-lg-6 col-md-6 p-3 mb-3 col-sm-6 col-xs-6 mx-0 mt-0 p-0 md-center ">
 					<h1 class="fw8 font py-0 text-center text-warning" style="font-size: 3em;line-height: 0.8;">{{weeksExp.length}}</h1>	

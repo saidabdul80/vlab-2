@@ -32,7 +32,7 @@
 		<div class="containerR px-2" style="display: none;" id="resulttable">
 		   	<div class="input-alt"></div>
 		   <span class="fa fa-arrows-alt bg-white rightnavexpander" @click="rightnavexpander"></span>		   
-		   <div v-html="result" v-if="startExperiment">		   	
+		   <div v-html="result" v-show="startExperiment">		   	
 		   </div>				                
 		</div>
 		<div class="containerR" style="display: none;" id="resultgraph">				

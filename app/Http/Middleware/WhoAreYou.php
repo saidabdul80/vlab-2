@@ -48,7 +48,7 @@ class WhoAreYou
             ->join('user_courses', 'user_courses.course_id', '=', 'weekly_works.course_id')
             ->leftJoin('experiment_results', function ($query) {
                 $query->on('user_courses.user_id', '=', 'experiment_results.user_id')
-                      ->on('weekly_work_experiments.weekly_work_id', '=', 'experiment_results.weekly_work_id')
+                      ->on('weekly_work_experiments.id', '=', 'experiment_results.weekly_work_id')
                       ->on('weekly_work_experiments.experiment_id', '=', 'experiment_results.experiment_id'); // Corrected join conditions
             })
             ->where([

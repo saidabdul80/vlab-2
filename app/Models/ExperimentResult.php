@@ -15,6 +15,25 @@ class ExperimentResult extends Model
         'created_at',
         'updated_at',
     ];
+    protected $fillable = [
+        'user_id',
+        'course_id',
+        'experiment_id',
+        'session_id',
+        'weekly_work_id',
+        'result_json',
+        'time_started',
+        'time_submited',
+        'time_left',
+        'completion_status',
+        'restart',
+        'status',
+        'experiment_id',
+        'weekly_work_id',
+        'course_id',
+        'user_id',
+        'session_id',
+    ];
 
     public function experiments()
     {

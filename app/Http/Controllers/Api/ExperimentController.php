@@ -256,7 +256,7 @@ class ExperimentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'weekly_work_id' => 'required',
+            'weekly_work_exp_id' => 'required',
         ]);
     
         if ($validator->fails()) {
@@ -265,7 +265,7 @@ class ExperimentController extends Controller
     
         $userId = $request->get('user_id');
         $fortimer = $request->get('fortimer');
-        $weeklyWorkExperimentId = $request->get('weekly_work_id');
+        $weeklyWorkExperimentId = $request->get('weekly_work_exp_id');
         $timeStarted = $request->get('time_started');
         $timeLeft = $request->get('time_left');
         $timeSubmitted = $request->get('time_submitted');
@@ -289,7 +289,7 @@ class ExperimentController extends Controller
         $existingResult = ExperimentResult::where([
             'user_id' => $userId,
             'session_id' => $this->currentSession,
-            'weekly_work_id' => $weeklyWorkExperiment->weekly_work_id,
+            'weekly_work_id' => $weeklyWorkExperimentId,
             'experiment_id' => $weeklyWorkExperiment->experiment_id
         ])->first();
             
@@ -298,8 +298,9 @@ class ExperimentController extends Controller
             // Update common fields
             $existingResult->time_left = $timeLeft;
             
-            if ($fortimer === 0) {
-                $existingResult->result_json = $resultJson;
+
+            $existingResult->result_json = $resultJson;
+            if ($fortimer == 0 ) {
                 $existingResult->time_submited = $timeSubmitted;
                 $existingResult->completion_status = 'Completed';
                 $existingResult->restart = 'Deny';
@@ -314,6 +315,7 @@ class ExperimentController extends Controller
             if ($existingResult->save()) {
                 return response()->json(['message' => "Experiment Result has been updated"], 200);
             }
+           
         }
         // If no existing result, create a new one
         else {
@@ -328,7 +330,7 @@ class ExperimentController extends Controller
             $newResult->completion_status = 'Started';
             $newResult->restart = 'Allow';
             $newResult->course_id = $courseId;
-            $newResult->weekly_work_id = $weeklyWorkExperiment->weekly_work_id;
+            $newResult->weekly_work_id = $weeklyWorkExperimentId;
             $newResult->session_id = $this->currentSession;
             
             if ($newResult->save()) {
@@ -338,7 +340,54 @@ class ExperimentController extends Controller
     
         return response()->json(['success' => false], 400);
     }
-    
+
+    public function getExperimentResultOn(Request $request)
+    {
+        // Validate incoming request
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'weekly_work_id' => 'required',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['error' => "All fields are required"], 400);
+        }
+        
+        $userId = $request->get('user_id');
+        $weeklyWorkExperimentId = $request->get('weekly_work_id');
+        
+        // Fetch user's course details
+        $userDetail = Course::join('weekly_works', 'courses.id', '=', 'weekly_works.course_id')
+            ->join('weekly_work_experiments', 'weekly_work_experiments.weekly_work_id', '=', 'weekly_works.id')
+            ->where(['weekly_works.session_id' => $this->currentSession, 'weekly_work_experiments.id' => $weeklyWorkExperimentId])
+            ->first();
+        
+        if (!$userDetail) {
+            return response()->json(['error' => "Invalid user or experiment"], 400);
+        }
+
+        $experimentId = $userDetail->experiment_id;
+        $courseId = $userDetail->course_id;
+        $weeklyWorkExperiment = WeeklyWorkExperiment::find($weeklyWorkExperimentId);
+        
+        // Fetch the experiment result
+        $experimentResult = ExperimentResult::where([
+            'user_id' => $userId,
+            'session_id' => $this->currentSession,
+            'weekly_work_id' => $weeklyWorkExperiment->weekly_work_id,
+            'experiment_id' => $weeklyWorkExperiment->experiment_id
+        ])->first();
+        
+        if ($experimentResult) {
+            return response()->json([
+                'success' => true,
+                'experiment_result' => $experimentResult
+            ], 200);
+        } else {
+            return response()->json(['error' => 'No experiment result found'], 404);
+        }
+    }
+
 
     public function getExperimentResultsByExpSessId(Request $request)
     {
